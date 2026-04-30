@@ -115,6 +115,27 @@ Cloud deployment plan for `model365`. Items are ordered by recommended sequence;
 
 ---
 
+### 8. Multimodal endpoints (image / music / video)
+
+These wrap pretrained models from Hugging Face (`SD-Turbo`, `MusicGen-small`, `ModelScope T2V`) and have very different infra needs from the tiny text model.
+
+- [ ] Decide which modalities to enable per deploy (set `IMAGE_MODEL_ID` / `MUSIC_MODEL_ID` / `VIDEO_MODEL_ID` env vars or leave defaults)
+- [ ] Pre-bake model weights into a Docker layer to avoid cold-start downloads:
+  ```dockerfile
+  RUN python -c "from diffusers import AutoPipelineForText2Image; \
+      AutoPipelineForText2Image.from_pretrained('stabilityai/sd-turbo')"
+  RUN python -c "from transformers import AutoProcessor, MusicgenForConditionalGeneration; \
+      AutoProcessor.from_pretrained('facebook/musicgen-small'); \
+      MusicgenForConditionalGeneration.from_pretrained('facebook/musicgen-small')"
+  ```
+  *(Adds ~3–5 GB to the image; trade build time for instant cold start.)*
+- [ ] **Image / music**: deploy on **Modal** with `gpu="T4"` — comfortably fits and per-second billing keeps idle cost at $0
+- [ ] **Video**: deploy on **Modal** with `gpu="A10G"` or `gpu="L4"` — needs ~10GB VRAM and is slow on T4
+- [ ] **Do NOT** deploy video on CPU — Fly.io / Render CPU instances will time out on every request
+- [ ] Set per-endpoint timeouts: 30s (image), 60s (music), 300s (video)
+- [ ] Add a max-concurrency limit per worker (1) — these models are not thread-safe and will OOM under parallel requests
+- [ ] Consider splitting into separate services: one Modal app per modality, so video traffic doesn't block image traffic
+
 ## Decision shortcut
 
 - **Just want it running cheaply, today?** → Fly.io CPU (steps 2 + 3).

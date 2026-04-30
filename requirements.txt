@@ -4,3 +4,12 @@ requests>=2.31
 fastapi>=0.110
 uvicorn[standard]>=0.27
 pydantic>=2.6
+
+# generative model deps (used by image_gen.py / music_gen.py / video_gen.py)
+diffusers>=0.27
+transformers>=4.40
+accelerate>=0.29
+safetensors>=0.4
+Pillow>=10.0
+soundfile>=0.12
+imageio[ffmpeg]>=2.34
