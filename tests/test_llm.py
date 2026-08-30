@@ -1,8 +1,9 @@
 import torch
 
+from simple_llm.generate import continue_text, load_model
 from simple_llm.model import GPT
 from simple_llm.tokenizer import CharTokenizer
-from simple_llm.train import get_batch, load_corpus, train
+from simple_llm.train import get_batch, load_corpus, save_checkpoint, train
 
 
 def test_tokenizer_roundtrip():
@@ -64,3 +65,16 @@ def test_end_to_end_training_learns_corpus():
 
     assert len(text) == 51
     assert all(ch in tokenizer.stoi for ch in text)
+
+
+def test_checkpoint_roundtrip_and_prompt_continuation(tmp_path):
+    model, tokenizer = train(steps=500)
+    checkpoint_path = tmp_path / "checkpoint.pt"
+    save_checkpoint(model, tokenizer, path=checkpoint_path)
+
+    loaded_model, loaded_tokenizer = load_model(path=checkpoint_path)
+    assert loaded_tokenizer.stoi == tokenizer.stoi
+
+    output = continue_text("the quick", max_new_tokens=20, path=checkpoint_path)
+    assert output.startswith("the quick")
+    assert len(output) == len("the quick") + 20

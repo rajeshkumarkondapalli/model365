@@ -10,6 +10,7 @@ from simple_llm.model import GPT
 from simple_llm.tokenizer import CharTokenizer
 
 DATA_PATH = Path(__file__).parent / "data" / "sample.txt"
+CHECKPOINT_PATH = Path(__file__).parent / "checkpoint.pt"
 BLOCK_SIZE = 32
 BATCH_SIZE = 16
 
@@ -49,8 +50,22 @@ def train(text=None, steps=2000, lr=3e-3, seed=0):
     return model, tokenizer
 
 
+def save_checkpoint(model, tokenizer, path=CHECKPOINT_PATH):
+    torch.save(
+        {
+            "model_state": model.state_dict(),
+            "block_size": model.block_size,
+            "stoi": tokenizer.stoi,
+            "itos": tokenizer.itos,
+        },
+        path,
+    )
+
+
 if __name__ == "__main__":
     model, tokenizer = train()
+    save_checkpoint(model, tokenizer)
+
     context = torch.zeros((1, 1), dtype=torch.long)
     generated = model.generate(context, max_new_tokens=300)[0].tolist()
     print("\ngenerated text:\n")

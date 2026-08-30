@@ -9,6 +9,14 @@ class CharTokenizer:
         self.stoi = {ch: i for i, ch in enumerate(chars)}
         self.itos = {i: ch for i, ch in enumerate(chars)}
 
+    @classmethod
+    def from_vocab(cls, stoi, itos):
+        tokenizer = cls.__new__(cls)
+        tokenizer.stoi = stoi
+        tokenizer.itos = itos
+        tokenizer.vocab_size = len(stoi)
+        return tokenizer
+
     def encode(self, text):
         return [self.stoi[ch] for ch in text]
 

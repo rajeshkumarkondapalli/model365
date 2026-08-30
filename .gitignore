@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+simple_llm/checkpoint.pt

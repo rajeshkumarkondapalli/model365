@@ -20,10 +20,13 @@ or pretrained weights. Every mechanism is implemented explicitly.
     blocks, final layer norm, and an output head producing next-token
     probabilities; `generate()` samples tokens autoregressively.
 - `simple_llm/train.py` — trains the model via next-token prediction
-  (cross-entropy loss) on `simple_llm/data/sample.txt`, then generates text.
+  (cross-entropy loss) on `simple_llm/data/sample.txt`, saves a checkpoint,
+  then generates text.
+- `simple_llm/generate.py` — loads a saved checkpoint and continues an
+  arbitrary text prompt without retraining.
 - `tests/test_llm.py` — checks tokenizer round-tripping, forward-pass
-  shapes, generation length, that loss decreases, and that a full training
-  run produces valid output.
+  shapes, generation length, that loss decreases, a full training run,
+  and checkpoint save/load + prompt continuation.
 
 ## How this maps to an LLM's computational workflow
 
@@ -55,5 +58,9 @@ tuning, RLHF, or retrieval augmentation.
 ```bash
 pip install -r requirements.txt
 python -m simple_llm.train
+python -m simple_llm.generate "the quick brown"
 pytest
 ```
+
+See [EXAMPLES.md](EXAMPLES.md) for real training output and example
+prompt -> generated-text pairs.
